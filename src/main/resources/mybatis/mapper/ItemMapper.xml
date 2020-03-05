@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.demo_springboot.mapper.ResourceMapper" >
+    <resultMap id="BaseResultMap" type="com.demo_springboot.entity.Resource" >
+        <result column="id" property="fileid"  />
+        <result column="filename" property="filename"  />
+        <result column="size"  property="size"  />
+        <result column="url" property="url" />
+        <result column="type" property="type" />
+        <result column="owner" property="owner" />
+        <result column="uploadtime" property="uploadtime" />
+        <result column="isdelete" property="isdelete"/>
+    </resultMap>
+    
+    <sql id="Base_Column_List" >
+        id,filename,size,url,type,owner,uploadtime,isdelete
+    </sql>
+ 
+    <select id="getAll" resultMap="BaseResultMap">
+        select 
+        <include refid="Base_Column_List" />
+	    from resource
+        where 
+        owner=#{owner} 
+        <bind name="pattern" value="false"/>
+        <if test="type=='trash'"> 
+            <bind name="pattern" value=" true"/>
+        </if>
+        and isdelete=#{pattern}
+        <if test="type=='img'">
+            and (type='jpg' or type='gif')
+        </if>
+        <if test="type=='doc'">
+            and (type='pdf' or type='txt' or type='doc' or type='xls')
+        </if>
+        <if test="type=='video'">
+            and (type='mp4' or type='mkv' or type='flv' or type='rmvb')
+        </if>
+    </select>
+
+    <select id="getOne"  resultType="Resource">
+        select 
+       <include refid="Base_Column_List"/>
+        from resource
+        where
+        id=#{fileid}
+    </select>
+
+    <insert id="insert"> 
+        insert into resource(filename,size,url,type,owner,uploadtime) 
+        VALUES(#{filename}, #{size}, #{url},#{type},#{owner},#{uploadtime})
+    </insert>
+
+    <update id="update">
+        update resource set filename=#{filename} 
+        where id =#{fileid}
+    </update>
+
+    <update id="delete">
+        update resource set isdelete=true 
+        where id =#{fileid}
+    </update>
+
+    <delete id="trashdelete">
+        delete from resource where id =#{fileid}
+    </delete>
+
+    <update id="recover">
+        update resource set isdelete=false 
+        where id =#{fileid}
+    </update>
+</mapper>
